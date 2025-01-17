@@ -289,17 +289,25 @@ export class CoreVersionedRoute implements VersionedRoute {
   }
 
   public getSecurity: RouteSecurityGetter = (req?: RequestLike) => {
-    if (!req) {
-      return this.defaultSecurityConfig;
+    // if (!req) {
+    //   return this.defaultSecurityConfig;
+    // }
+
+    // const version = this.getVersion(req)!;
+    // const security = this.handlers.get(version)?.options.security ?? this.defaultSecurityConfig;
+
+    for (const [v, handler] of this.handlers) {
+      if (handler.options.security) {
+        return handler.options.security ?? this.defaultSecurityConfig;
+      }
     }
 
-    const version = this.getVersion(req)!;
-    const security = this.handlers.get(version)?.options.security ?? this.defaultSecurityConfig;
+    return this.defaultSecurityConfig;
 
     // authc can be defined only on the top route level,
     // so we need to merge it with the versioned one which can have different authz per version
-    return security
-      ? { authz: security.authz, authc: this.defaultSecurityConfig?.authc }
-      : undefined;
+    // return security
+    //   ? { authz: security.authz, authc: this.defaultSecurityConfig?.authc }
+    //   : undefined;
   };
 }

@@ -331,6 +331,98 @@ export class HttpService
         },
       },
     });
+
+    server.route({
+      path: '/api/route-info',
+      method: 'GET',
+      handler: async (req, h) => {
+        const routers = this.httpServer.getRouters();
+
+        const routes = {
+          versioned: [],
+          classic: [],
+        };
+
+        const data = routers.routers
+          .map((router) => router.getRoutes({ excludeVersionedRoutes: false }))
+          .flat()
+          .reduce(
+            (acc, route) => {
+              const security = route.isVersioned ? route.security() : route.security;
+              const isMigratedClassicRoute = route.security && !route.isVersioned;
+
+              const isMigratedVersionedRoute = route.isVersioned && security;
+
+              if (isMigratedClassicRoute) {
+                if (security.authz.enabled !== false) {
+                  acc.classic.migratedWithAuthz++;
+                } else if (security.authz.enabled === false) {
+                  // @ts-expect-error
+                  routes.classic.push({
+                    path: route.path,
+                    access: route.options.access ?? 'internal',
+                    reason: security.authz.reason,
+                  });
+                  acc.classic.migratedWithoutAuthz++;
+                }
+
+                return acc;
+              }
+
+              if (isMigratedVersionedRoute) {
+                if (security.authz.enabled !== false) {
+                  acc.versioned.migratedWithAuthz++;
+                } else if (security.authz.enabled === false) {
+                  // @ts-expect-error
+                  routes.versioned.push({
+                    path: route.path,
+                    access: route.options.access ?? 'internal',
+                    reason: security.authz.reason,
+                  });
+                  acc.versioned.migratedWithoutAuthz++;
+                }
+
+                return acc;
+              }
+
+              if (!route.path.startsWith('/XXXXXXXXXXXX')) {
+                const routerType = route.isVersioned ? 'versioned' : 'classic';
+                if (route.options.tags?.some((tag) => tag.startsWith('access:'))) {
+                  acc[routerType].nonMigratedAuthz++;
+                } else {
+                  acc[routerType].nonMigratedNoAuthz++;
+                }
+              }
+
+              return acc;
+            },
+            {
+              versioned: {
+                migratedWithAuthz: 0,
+                migratedWithoutAuthz: 0,
+                nonMigratedAuthz: 0,
+                nonMigratedNoAuthz: 0,
+              },
+              classic: {
+                migratedWithAuthz: 0,
+                migratedWithoutAuthz: 0,
+                nonMigratedAuthz: 0,
+                nonMigratedNoAuthz: 0,
+              },
+            }
+          );
+
+        return { total: data, routes };
+      },
+      options: {
+        app: { access: 'public' },
+        auth: false,
+        cache: {
+          privacy: 'public',
+          otherwise: 'must-revalidate',
+        },
+      },
+    });
   }
 
   /**
