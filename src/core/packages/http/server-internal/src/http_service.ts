@@ -18,6 +18,7 @@ import {
 } from '@kbn/router-to-openapispec';
 import { Logger } from '@kbn/logging';
 import { Env } from '@kbn/config';
+import type { AuthzEnabled, AuthzDisabled, InternalRouteSecurity } from '@kbn/core-http-server';
 import type { CoreContext, CoreService } from '@kbn/core-base-server-internal';
 import type { PluginOpaqueId } from '@kbn/core-base-common';
 import type { InternalExecutionContextSetup } from '@kbn/core-execution-context-server-internal';
@@ -338,6 +339,25 @@ export class HttpService
       handler: async (req, h) => {
         const routers = this.httpServer.getRouters();
 
+        let filters: GenerateOpenApiDocumentOptionsFilters;
+        let query: TypeOf<typeof querySchema>;
+        try {
+          query = querySchema.validate(req.query);
+          filters = {
+            ...query,
+            excludePathsMatching:
+              typeof query.excludePathsMatching === 'string'
+                ? [query.excludePathsMatching]
+                : query.excludePathsMatching,
+            pathStartsWith:
+              typeof query.pathStartsWith === 'string'
+                ? [query.pathStartsWith]
+                : query.pathStartsWith,
+          };
+        } catch (e) {
+          return h.response({ message: e.message }).code(400);
+        }
+
         const routes = {
           versioned: [],
           classic: [],
@@ -350,6 +370,7 @@ export class HttpService
             (acc, route) => {
               const security = route.isVersioned ? route.security() : route.security;
               const isMigratedClassicRoute = route.security && !route.isVersioned;
+
 
               const isMigratedVersionedRoute = route.isVersioned && security;
 
@@ -448,6 +469,50 @@ export class HttpService
     await this.httpsRedirectServer.stop();
   }
 }
+
+export const extractAuthzInfo = (routeSecurity: InternalRouteSecurity | undefined) => {
+  if (!routeSecurity) {
+    return '';
+  }
+  if (!('authz' in routeSecurity) || (routeSecurity.authz as AuthzDisabled).enabled === false) {
+    return '';
+  }
+
+  const privileges = (routeSecurity.authz as AuthzEnabled).requiredPrivileges;
+
+  const groupedPrivileges = privileges.reduce<{
+    allRequired: string[];
+    anyRequired: string[];
+  }>(
+    (groups, privilege) => {
+      if (typeof privilege === 'string') {
+        groups.allRequired.push(privilege);
+
+        return groups;
+      }
+      groups.allRequired.push(...(privilege.allRequired ?? []));
+      groups.anyRequired.push(...(privilege.anyRequired ?? []));
+
+      return groups;
+    },
+    {
+      anyRequired: [],
+      allRequired: [],
+    }
+  );
+
+  const getPrivilegesDescription = (allRequired: string[], anyRequired: string[]) => {
+    const allDescription = allRequired.length ? `ALL of [${allRequired.join(', ')}]` : '';
+    const anyDescription = anyRequired.length ? `ANY of [${anyRequired.join(' OR ')}]` : '';
+
+    return `${allDescription}${allDescription && anyDescription ? ' AND ' : ''}${anyDescription}`;
+  };
+
+  const allRequired = [...groupedPrivileges.allRequired];
+  const anyRequired = [...groupedPrivileges.anyRequired];
+
+  return getPrivilegesDescription(allRequired, anyRequired)
+};
 
 function getVersionedRouterOptions(config: HttpConfig): RouterOptions['versionedRouterOptions'] {
   return {
