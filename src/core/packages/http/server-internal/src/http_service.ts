@@ -247,10 +247,113 @@ export class HttpService
         this.registerOasApi(config);
       }
 
+      this.registerRouteInfoApi(config);
+
       await this.httpServer.start();
     }
 
     return this.getStartContract();
+  }
+
+  private registerRouteInfoApi(config: HttpConfig) {
+    const server = this.internalSetup?.server;
+    const basePath = this.internalSetup?.basePath;
+
+    if (!basePath || !server) {
+      throw new Error('Cannot register API before server setup is complete');
+    }
+
+    server.route({
+      path: '/api/route-info',
+      method: 'GET',
+      handler: async (req, h) => {
+        const routers = this.httpServer.getRouters();
+
+        const routes = {
+          versioned: [],
+          classic: [],
+        };
+
+        const data = routers.routers
+          .map((router) => router.getRoutes({ excludeVersionedRoutes: false }))
+          .flat()
+          .reduce(
+            (acc, route) => {
+              const security = route.isVersioned ? route.security() : route.security;
+              const isMigratedClassicRoute = route.security && !route.isVersioned;
+
+              const isMigratedVersionedRoute = route.isVersioned && security;
+
+              if (isMigratedClassicRoute) {
+                if (security.authz.enabled !== false) {
+                  acc.classic.migratedWithAuthz++;
+                } else if (security.authz.enabled === false) {
+                  // @ts-expect-error
+                  routes.classic.push({
+                    path: route.path,
+                    access: route.options.access ?? 'internal',
+                    reason: security.authz.reason,
+                  });
+                  acc.classic.migratedWithoutAuthz++;
+                }
+
+                return acc;
+              }
+
+              if (isMigratedVersionedRoute) {
+                if (security.authz.enabled !== false) {
+                  acc.versioned.migratedWithAuthz++;
+                } else if (security.authz.enabled === false) {
+                  // @ts-expect-error
+                  routes.versioned.push({
+                    path: route.path,
+                    access: route.options.access ?? 'internal',
+                    reason: security.authz.reason,
+                  });
+                  acc.versioned.migratedWithoutAuthz++;
+                }
+
+                return acc;
+              }
+
+              if (!route.path.startsWith('/XXXXXXXXXXXX')) {
+                const routerType = route.isVersioned ? 'versioned' : 'classic';
+                if (route.options.tags?.some((tag) => tag.startsWith('access:'))) {
+                  acc[routerType].nonMigratedAuthz++;
+                } else {
+                  acc[routerType].nonMigratedNoAuthz++;
+                }
+              }
+
+              return acc;
+            },
+            {
+              versioned: {
+                migratedWithAuthz: 0,
+                migratedWithoutAuthz: 0,
+                nonMigratedAuthz: 0,
+                nonMigratedNoAuthz: 0,
+              },
+              classic: {
+                migratedWithAuthz: 0,
+                migratedWithoutAuthz: 0,
+                nonMigratedAuthz: 0,
+                nonMigratedNoAuthz: 0,
+              },
+            }
+          );
+
+        return { total: data, routes };
+      },
+      options: {
+        app: { access: 'public' },
+        auth: false,
+        // cache: {
+        //   privacy: 'public',
+        //   otherwise: 'must-revalidate',
+        // },
+      },
+    });
   }
 
   private registerOasApi(config: HttpConfig) {
@@ -332,118 +435,6 @@ export class HttpService
         },
       },
     });
-
-    server.route({
-      path: '/api/route-info',
-      method: 'GET',
-      handler: async (req, h) => {
-        const routers = this.httpServer.getRouters();
-
-        let filters: GenerateOpenApiDocumentOptionsFilters;
-        let query: TypeOf<typeof querySchema>;
-        try {
-          query = querySchema.validate(req.query);
-          filters = {
-            ...query,
-            excludePathsMatching:
-              typeof query.excludePathsMatching === 'string'
-                ? [query.excludePathsMatching]
-                : query.excludePathsMatching,
-            pathStartsWith:
-              typeof query.pathStartsWith === 'string'
-                ? [query.pathStartsWith]
-                : query.pathStartsWith,
-          };
-        } catch (e) {
-          return h.response({ message: e.message }).code(400);
-        }
-
-        const routes = {
-          versioned: [],
-          classic: [],
-        };
-
-        const data = routers.routers
-          .map((router) => router.getRoutes({ excludeVersionedRoutes: false }))
-          .flat()
-          .reduce(
-            (acc, route) => {
-              const security = route.isVersioned ? route.security() : route.security;
-              const isMigratedClassicRoute = route.security && !route.isVersioned;
-
-
-              const isMigratedVersionedRoute = route.isVersioned && security;
-
-              if (isMigratedClassicRoute) {
-                if (security.authz.enabled !== false) {
-                  acc.classic.migratedWithAuthz++;
-                } else if (security.authz.enabled === false) {
-                  // @ts-expect-error
-                  routes.classic.push({
-                    path: route.path,
-                    access: route.options.access ?? 'internal',
-                    reason: security.authz.reason,
-                  });
-                  acc.classic.migratedWithoutAuthz++;
-                }
-
-                return acc;
-              }
-
-              if (isMigratedVersionedRoute) {
-                if (security.authz.enabled !== false) {
-                  acc.versioned.migratedWithAuthz++;
-                } else if (security.authz.enabled === false) {
-                  // @ts-expect-error
-                  routes.versioned.push({
-                    path: route.path,
-                    access: route.options.access ?? 'internal',
-                    reason: security.authz.reason,
-                  });
-                  acc.versioned.migratedWithoutAuthz++;
-                }
-
-                return acc;
-              }
-
-              if (!route.path.startsWith('/XXXXXXXXXXXX')) {
-                const routerType = route.isVersioned ? 'versioned' : 'classic';
-                if (route.options.tags?.some((tag) => tag.startsWith('access:'))) {
-                  acc[routerType].nonMigratedAuthz++;
-                } else {
-                  acc[routerType].nonMigratedNoAuthz++;
-                }
-              }
-
-              return acc;
-            },
-            {
-              versioned: {
-                migratedWithAuthz: 0,
-                migratedWithoutAuthz: 0,
-                nonMigratedAuthz: 0,
-                nonMigratedNoAuthz: 0,
-              },
-              classic: {
-                migratedWithAuthz: 0,
-                migratedWithoutAuthz: 0,
-                nonMigratedAuthz: 0,
-                nonMigratedNoAuthz: 0,
-              },
-            }
-          );
-
-        return { total: data, routes };
-      },
-      options: {
-        app: { access: 'public' },
-        auth: false,
-        cache: {
-          privacy: 'public',
-          otherwise: 'must-revalidate',
-        },
-      },
-    });
   }
 
   /**
@@ -511,7 +502,7 @@ export const extractAuthzInfo = (routeSecurity: InternalRouteSecurity | undefine
   const allRequired = [...groupedPrivileges.allRequired];
   const anyRequired = [...groupedPrivileges.anyRequired];
 
-  return getPrivilegesDescription(allRequired, anyRequired)
+  return getPrivilegesDescription(allRequired, anyRequired);
 };
 
 function getVersionedRouterOptions(config: HttpConfig): RouterOptions['versionedRouterOptions'] {
