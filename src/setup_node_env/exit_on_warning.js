@@ -95,6 +95,25 @@ var IGNORE_WARNINGS = [
     code: 'DEP0128',
     messageContains: '@elastic/ebt/package.json',
   },
+  {
+    name: 'ExperimentalWarning',
+    message: 'Permission is an experimental feature and might change at any time',
+  },
+  {
+    name: 'SecurityWarning',
+    message:
+      'The flag --allow-addons must be used with extreme caution. It could invalidate the permission model.',
+  },
+  {
+    name: 'SecurityWarning',
+    message:
+      'The flag --allow-worker must be used with extreme caution. It could invalidate the permission model.',
+  },
+  {
+    name: 'SecurityWarning',
+    message:
+      'The flag --allow-child-process must be used with extreme caution. It could invalidate the permission model.',
+  },
 ];
 
 if (process.noProcessWarnings !== true) {
