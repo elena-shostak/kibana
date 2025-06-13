@@ -76,6 +76,25 @@ var IGNORE_WARNINGS = [
     message:
       "Setting the NODE_TLS_REJECT_UNAUTHORIZED environment variable to '0' makes TLS connections and HTTPS requests insecure by disabling certificate verification.",
   },
+  {
+    name: 'ExperimentalWarning',
+    message: 'Permission is an experimental feature and might change at any time',
+  },
+  {
+    name: 'SecurityWarning',
+    message:
+      'The flag --allow-addons must be used with extreme caution. It could invalidate the permission model.',
+  },
+  {
+    name: 'SecurityWarning',
+    message:
+      'The flag --allow-worker must be used with extreme caution. It could invalidate the permission model.',
+  },
+  {
+    name: 'SecurityWarning',
+    message:
+      'The flag --allow-child-process must be used with extreme caution. It could invalidate the permission model.',
+  },
 ];
 
 if (process.noProcessWarnings !== true) {

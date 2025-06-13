@@ -47,3 +47,11 @@ new ritm.Hook(
 if (!process.env.KBN_UNSAFE_DISABLE_PROTOTYPE_HARDENING) {
   hardenPrototypes();
 }
+
+// eslint-disable-next-line no-restricted-syntax
+const noAccessFolder = `${process.env.HOME}/Repos/`;
+// eslint-disable-next-line no-restricted-syntax
+const hasAccessFolder = `${process.env.HOME}/Repos/kibana/data`;
+
+console.log(noAccessFolder, process.permission.has('fs.write', noAccessFolder));
+console.log(hasAccessFolder, process.permission.has('fs.write', hasAccessFolder));
