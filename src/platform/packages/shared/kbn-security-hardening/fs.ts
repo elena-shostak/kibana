@@ -47,7 +47,7 @@ export async function saveFile(
   content: Parameters<typeof fsp.writeFile>[1],
   options: { persist?: boolean; override?: boolean } = {}
 ): Promise<{ alias: string; path: string }> {
-  const { persist = true, override = false } = options;
+  const { persist = false, override = false } = options;
   const volumeType: VolumeType = persist ? 'disk' : 'memory';
   const safeName = sanitizeName(name);
   const alias = `${volumeType}:${safeName}`;

@@ -9,8 +9,14 @@
 import { deleteFile, getFile, saveFile } from './fs';
 
 describe('safe-fs', () => {
+  afterAll(() => {
+    deleteFile('test.json');
+    deleteFile('disk.txt');
+    deleteFile('conflict.txt');
+  });
+
   it('saves and retrieves a file in memory', async () => {
-    await saveFile('test.json', '{"ok":true}', { persist: false });
+    await saveFile('test.json', '{"ok":true}');
     const file = await getFile('test.json');
     expect(file.name).toBe('test.json');
     expect(file.content.toString()).toBe('{"ok":true}');
@@ -23,14 +29,12 @@ describe('safe-fs', () => {
   });
 
   it('prevents saving a file with same name without override', async () => {
-    await saveFile('conflict.txt', 'One', { persist: false });
-    await expect(saveFile('conflict.txt', 'Two', { persist: false })).rejects.toThrow(
-      /already exists/
-    );
+    await saveFile('conflict.txt', 'One');
+    await expect(saveFile('conflict.txt', 'Two')).rejects.toThrow(/already exists/);
   });
 
   it('deletes a file from memory', async () => {
-    await saveFile('delete-me.json', '{"x":1}', { persist: false });
+    await saveFile('delete-me.json', '{"x":1}');
     await deleteFile('delete-me.json');
     await expect(getFile('delete-me.json')).rejects.toThrow(/not found/);
   });
