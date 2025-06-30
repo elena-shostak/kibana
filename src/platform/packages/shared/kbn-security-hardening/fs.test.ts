@@ -6,7 +6,7 @@
  * your election, the "Elastic License 2.0", the "GNU Affero General Public
  * License v3.0 only", or the "Server Side Public License, v 1".
  */
-import { deleteFile, getFile, saveFile } from './fs';
+import { deleteFile, readFile, writeFile } from './fs';
 
 describe('safe-fs', () => {
   afterAll(() => {
@@ -16,26 +16,26 @@ describe('safe-fs', () => {
   });
 
   it('saves and retrieves a file in memory', async () => {
-    await saveFile('test.json', '{"ok":true}');
-    const file = await getFile('test.json');
+    await writeFile('test.json', '{"ok":true}', { persist: false });
+    const file = await readFile('test.json');
     expect(file.name).toBe('test.json');
     expect(file.content.toString()).toBe('{"ok":true}');
   });
 
   it('saves and retrieves a file on disk', async () => {
-    await saveFile('disk.txt', 'Hello Disk', { persist: true });
-    const file = await getFile('disk.txt');
+    await writeFile('disk.txt', 'Hello Disk');
+    const file = await readFile('disk.txt');
     expect(file.content.toString()).toBe('Hello Disk');
   });
 
   it('prevents saving a file with same name without override', async () => {
-    await saveFile('conflict.txt', 'One');
-    await expect(saveFile('conflict.txt', 'Two')).rejects.toThrow(/already exists/);
+    await writeFile('conflict.txt', 'One');
+    await expect(writeFile('conflict.txt', 'Two')).rejects.toThrow(/already exists/);
   });
 
   it('deletes a file from memory', async () => {
-    await saveFile('delete-me.json', '{"x":1}');
+    await writeFile('delete-me.json', '{"x":1}');
     await deleteFile('delete-me.json');
-    await expect(getFile('delete-me.json')).rejects.toThrow(/not found/);
+    await expect(readFile('delete-me.json')).rejects.toThrow(/not found/);
   });
 });

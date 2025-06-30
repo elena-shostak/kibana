@@ -8,13 +8,12 @@
  */
 
 import { Buffer } from 'buffer';
-import type { BinaryLike } from 'crypto';
-import { createHash } from 'crypto';
-import { existsSync, promises as fsp } from 'fs';
-import { fs as memfs } from 'memfs';
+import { existsSync } from 'fs';
 import * as path from 'path';
 
 import { REPO_ROOT } from '@kbn/repo-info';
+
+import { FileRepository } from './fs-repository';
 
 const DATA_PATH = path.join(REPO_ROOT, 'data');
 
@@ -23,37 +22,77 @@ type VolumeType = 'disk' | 'memory';
 interface FileMeta {
   path: string;
   volumeType: VolumeType;
+  volume?: string;
   hash?: string;
 }
 
 const fileMeta = new Map<string, FileMeta>();
-const sanitizeName = (name: string): string => path.basename(name);
-
-const computeHash = (content: BinaryLike): string =>
-  createHash('sha256').update(content).digest('hex');
+const sanitizeName = (name: string): string => {
+  // TODO perform validations
+  return path.basename(name);
+};
 
 // Inspired by node policies
 const FS_POLICY = [
   {
     name: 'default',
-    volume: DATA_PATH,
+    volumes: [DATA_PATH, '/virtual/data'],
     allowedExtensions: ['.json', '.txt', '.yml', '.yaml', '.log', '.zip', '.gz'],
     maxSizeBytes: 1024 * 1024 * 10, // 10MB
   },
 ];
 
-export async function saveFile(
-  name: string,
-  content: Parameters<typeof fsp.writeFile>[1],
-  options: { persist?: boolean; override?: boolean } = {}
-): Promise<{ alias: string; path: string }> {
-  const { persist = false, override = false } = options;
-  const volumeType: VolumeType = persist ? 'disk' : 'memory';
-  const safeName = sanitizeName(name);
-  const alias = `${volumeType}:${safeName}`;
-  //   const buffer = Buffer.isBuffer(content) ? content : Buffer.from(content);
-  //   const newHash = computeHash(buffer);
+type FileContent = string | NodeJS.ArrayBufferView;
 
+interface WriteFileOptions {
+  /**
+   * When true, allows overwriting an existing file at the same path.
+   * @default false
+   */
+  override?: boolean;
+  /**
+   * Defines the storage.
+   * `true`: Saves the file to the disk.
+   * `false`: Saves the file to an in-memory filesystem.
+   * @default true
+   */
+  persist?: boolean;
+
+  /**
+   * Specifies a sub-directory (sub-volume) within the base data directory
+   * to help in organizing files, e.g., 'reports', 'exports'.
+   */
+  volume?: string;
+}
+
+interface FileMetadata {
+  /**
+   * A unique identifier for the file, combining volume type and sanitized name.
+   * e.g., 'disk:reports/my-report.csv'
+   */
+  alias: string;
+
+  /**
+   * The full path to the file, either on disk or in the virtual filesystem.
+   */
+  path: string;
+}
+
+const getFileAlias = (name: string, volumeType: VolumeType, volume?: string) => {
+  return `${volumeType}:${volume ? `${volume}/` : ''}${name}`;
+};
+
+export async function writeFile(
+  name: string,
+  content: FileContent,
+  options?: WriteFileOptions
+): Promise<FileMetadata> {
+  const { persist = true, override = false, volume } = options ?? {};
+  const volumeType: VolumeType = persist ? 'disk' : 'memory';
+  const repository = FileRepository.from(volumeType);
+
+  const safeName = sanitizeName(name);
+  const alias = getFileAlias(safeName, volumeType, volume);
   const existing = fileMeta.get(alias);
   // Policies for different volumes can be further extended
   const policy = FS_POLICY.find((p) => p.name === 'default');
@@ -69,84 +108,80 @@ export async function saveFile(
     // 4. File type validation
     // 5. File content validation
 
-    if (volumeType === 'disk') {
-      if (policy?.allowedExtensions?.includes(path.extname(safeName))) {
-        throw new Error(`File "${name}" has an invalid extension.`);
-      }
-
-      if (policy?.maxSizeBytes && Buffer.byteLength(content) > policy.maxSizeBytes) {
-        throw new Error(
-          `File "${name}" exceeds the maximum allowed size of ${policy.maxSizeBytes} bytes.`
-        );
-      }
-
-      await fsp.writeFile(existing.path, content);
-    } else {
-      // @ts-expect-error
-      await memfs.promises.writeFile(existing.path, content);
+    if (policy?.allowedExtensions?.includes(path.extname(safeName))) {
+      throw new Error(`File "${name}" has an invalid extension.`);
     }
+
+    if (policy?.maxSizeBytes && Buffer.byteLength(content) > policy.maxSizeBytes) {
+      throw new Error(
+        `File "${name}" exceeds the maximum allowed size of ${policy.maxSizeBytes} bytes.`
+      );
+    }
+
+    repository.writeFile(existing.path, content);
 
     return { alias, path: existing.path };
   }
 
-  const filePath =
-    volumeType === 'disk' ? path.join(DATA_PATH, safeName) : `/virtual/data/${safeName}`;
+  let volumePath = repository.basePath;
 
-  if (volumeType === 'disk') {
-    await fsp.writeFile(filePath, content);
-  } else {
-    await memfs.promises.mkdir(`/virtual/data`, { recursive: true });
-    // @ts-expect-error fix types later
-    await memfs.promises.writeFile(filePath, content);
+  if (volume && !repository.volumeExists(volume)) {
+    await repository.createVolume(volume);
+    volumePath = path.join(volumePath, volume);
   }
 
-  fileMeta.set(alias, { path: filePath, volumeType });
+  const filePath = path.join(volumePath, safeName);
+
+  await repository.writeFile(filePath, content);
+
+  fileMeta.set(alias, { path: filePath, volumeType, volume });
 
   return { alias, path: filePath };
 }
 
-const getEntry = (name: string) => {
-  const [diskAlias, memoryAlias] = ['disk', 'memory'].map((v) => `${v}:${name}`);
+const getEntry = (name: string, volume?: string) => {
+  const [diskAlias, memoryAlias] = ['disk', 'memory'].map((vType) =>
+    getFileAlias(name, vType as VolumeType, volume)
+  );
   let entry = fileMeta.get(diskAlias) || fileMeta.get(memoryAlias);
 
-  if (!entry && existsSync(path.join(DATA_PATH, name))) {
-    entry = { path: path.join(DATA_PATH, name), volumeType: 'disk' };
+  const filePath = path.join(DATA_PATH, volume ?? '', name);
+
+  if (!entry && existsSync(filePath)) {
+    entry = { path: filePath, volumeType: 'disk', volume };
   }
 
   return entry;
 };
 
-export async function getFile(name: string): Promise<{ name: string; content: Buffer }> {
+export async function readFile(
+  name: string,
+  volume?: string
+): Promise<{ name: string; content: FileContent }> {
   const safeName = sanitizeName(name);
-  const entry = getEntry(safeName);
+  const entry = getEntry(safeName, volume);
 
   if (!entry) {
     throw new Error(`File "${name}" not found.`);
   }
 
-  const content = await readFile(entry.path, entry.volumeType);
+  const repository = FileRepository.from(entry.volumeType);
 
-  // @ts-expect-error fix later
+  const content = await repository.readFile(entry.path);
+
   return { name: safeName, content };
 }
 
-export async function deleteFile(name: string): Promise<void> {
+export async function deleteFile(name: string, volume?: string): Promise<void> {
   const safeName = sanitizeName(name);
-  const entry = getEntry(safeName);
+  const entry = getEntry(safeName, volume);
 
   if (!entry) {
     throw new Error(`File "${name}" not found.`);
   }
+  const alias = getFileAlias(safeName, entry.volumeType, entry.volume);
+  const repository = FileRepository.from(entry.volumeType);
 
-  if (entry.volumeType === 'disk') {
-    await fsp.unlink(entry.path);
-  } else {
-    await memfs.promises.unlink(entry.path);
-  }
-
-  fileMeta.delete(`${entry.volumeType}:${safeName}`);
-}
-
-async function readFile(filePath: string, volumeType: VolumeType): ReturnType<typeof fsp.readFile> {
-  return volumeType === 'disk' ? fsp.readFile(filePath) : memfs.promises.readFile(filePath);
+  await repository.unlink(entry.path);
+  fileMeta.delete(alias);
 }
