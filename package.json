@@ -58,7 +58,7 @@
     "serverless-oblt": "node --no-experimental-require-module scripts/kibana --dev --serverless=oblt",
     "serverless-security": "node --no-experimental-require-module scripts/kibana --dev --serverless=security",
     "spec_to_console": "node --no-experimental-require-module scripts/spec_to_console",
-    "start": "node --experimental-permission --allow-fs-read=* --allow-fs-write=${HOME}/Repos/kibana/* --allow-addons --allow-worker --allow-child-process --no-experimental-require-module scripts/kibana --dev",
+    "start": "node --permission --allow-fs-read=* --allow-fs-write=./data/* --allow-addons --allow-worker --allow-child-process --no-experimental-require-module scripts/kibana --dev",
     "storybook": "node --no-experimental-require-module scripts/storybook",
     "test:ftr": "node --no-experimental-require-module scripts/functional_tests",
     "test:ftr:runner": "node --no-experimental-require-module scripts/functional_test_runner",
