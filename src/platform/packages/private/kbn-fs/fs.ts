@@ -33,11 +33,11 @@ const FS_POLICY = [
 
 export class SafeFS implements ISafeFs {
   private readonly DATA_PATH: string;
-  private readonly fileMeta: Map<string, FileRegistryEntry>;
+  private readonly fileRegistry: Map<string, FileRegistryEntry>;
 
   constructor(basePath?: string) {
     this.DATA_PATH = basePath || path.join(REPO_ROOT, 'data');
-    this.fileMeta = new Map<string, FileRegistryEntry>();
+    this.fileRegistry = new Map<string, FileRegistryEntry>();
   }
 
   private sanitizeName(name: string): string {
@@ -76,7 +76,7 @@ export class SafeFS implements ISafeFs {
 
     const safeName = this.sanitizeName(name);
     const alias = this.getFileAlias(safeName, volumeType, volume);
-    const existing = this.fileMeta.get(alias);
+    const existing = this.fileRegistry.get(alias);
     // Policies for different volumes can be further extended
     const policy = FS_POLICY.find((p) => p.name === 'default');
 
@@ -116,7 +116,7 @@ export class SafeFS implements ISafeFs {
 
     await fsp.writeFile(filePath, content);
 
-    this.fileMeta.set(alias, { path: filePath, volumeType, volume });
+    this.fileRegistry.set(alias, { path: filePath, volumeType, volume });
 
     return { alias, path: filePath };
   }
@@ -135,7 +135,7 @@ export class SafeFS implements ISafeFs {
     const alias = this.getFileAlias(safeName, 'disk', volume);
     await fsp.unlink(filePath);
 
-    this.fileMeta.delete(alias);
+    this.fileRegistry.delete(alias);
   }
 
   appendFile(): Promise<FileMetadata> {

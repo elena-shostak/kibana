@@ -21,11 +21,11 @@ import type {
 
 class SafeMemFS implements ISafeFs {
   private readonly DATA_PATH: string;
-  private readonly fileMeta: Map<string, FileRegistryEntry>;
+  private readonly fileRegistry: Map<string, FileRegistryEntry>;
 
   constructor(basePath?: string) {
     this.DATA_PATH = basePath || 'virtual/data';
-    this.fileMeta = new Map<string, FileRegistryEntry>();
+    this.fileRegistry = new Map<string, FileRegistryEntry>();
 
     // Ensure the base directory exists
     if (!memfs.existsSync(this.DATA_PATH)) {
@@ -69,7 +69,7 @@ class SafeMemFS implements ISafeFs {
 
     const safeName = this.sanitizeName(name);
     const alias = this.getFileAlias(safeName, volumeType, volume);
-    const existing = this.fileMeta.get(alias);
+    const existing = this.fileRegistry.get(alias);
 
     if (existing) {
       if (!override) {
@@ -91,7 +91,7 @@ class SafeMemFS implements ISafeFs {
 
     await memfs.promises.writeFile(filePath, content);
 
-    this.fileMeta.set(alias, { path: filePath, volumeType, volume });
+    this.fileRegistry.set(alias, { path: filePath, volumeType, volume });
 
     return { alias, path: filePath };
   }
@@ -109,7 +109,7 @@ class SafeMemFS implements ISafeFs {
     const filePath = this.getFilePath(safeName, volume);
     const alias = this.getFileAlias(safeName, 'memory', volume);
     await memfs.promises.unlink(filePath);
-    this.fileMeta.delete(alias);
+    this.fileRegistry.delete(alias);
   }
 
   appendFile(): Promise<FileMetadata> {
