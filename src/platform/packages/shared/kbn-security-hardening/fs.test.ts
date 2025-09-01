@@ -1,0 +1,41 @@
+/*
+ * Copyright Elasticsearch B.V. and/or licensed to Elasticsearch B.V. under one
+ * or more contributor license agreements. Licensed under the "Elastic License
+ * 2.0", the "GNU Affero General Public License v3.0 only", and the "Server Side
+ * Public License v 1"; you may not use this file except in compliance with, at
+ * your election, the "Elastic License 2.0", the "GNU Affero General Public
+ * License v3.0 only", or the "Server Side Public License, v 1".
+ */
+import { deleteFile, readFile, writeFile } from './fs';
+
+describe('safe-fs', () => {
+  afterAll(() => {
+    deleteFile('test.json');
+    deleteFile('disk.txt');
+    deleteFile('conflict.txt');
+  });
+
+  it('saves and retrieves a file in memory', async () => {
+    await writeFile('test.json', '{"ok":true}', { persist: false });
+    const file = await readFile('test.json');
+    expect(file.name).toBe('test.json');
+    expect(file.content.toString()).toBe('{"ok":true}');
+  });
+
+  it('saves and retrieves a file on disk', async () => {
+    await writeFile('disk.txt', 'Hello Disk');
+    const file = await readFile('disk.txt');
+    expect(file.content.toString()).toBe('Hello Disk');
+  });
+
+  it('prevents saving a file with same name without override', async () => {
+    await writeFile('conflict.txt', 'One');
+    await expect(writeFile('conflict.txt', 'Two')).rejects.toThrow(/already exists/);
+  });
+
+  it('deletes a file from memory', async () => {
+    await writeFile('delete-me.json', '{"x":1}');
+    await deleteFile('delete-me.json');
+    await expect(readFile('delete-me.json')).rejects.toThrow(/not found/);
+  });
+});

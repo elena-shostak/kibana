@@ -3,11 +3,13 @@
   "compilerOptions": {
     "outDir": "target/types",
     "types": [
-      "node"
+      "node",
+      "jest"
     ]
   },
   "include": [
     "**/*.ts",
+    "**/*.js"
   ],
   "exclude": [
     "target/**/*"
