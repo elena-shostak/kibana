@@ -5,8 +5,7 @@
  * 2.0.
  */
 
-import { EuiIconTip } from '@elastic/eui';
-import { shallow } from 'enzyme';
+import { render, screen } from '@testing-library/react';
 import React from 'react';
 
 import { ReservedRoleBadge } from './reserved_role_badge';
@@ -68,11 +67,11 @@ const unreservedRole = {
 };
 
 test('it renders without crashing', () => {
-  const wrapper = shallow(<ReservedRoleBadge role={reservedRole} />);
-  expect(wrapper.find(EuiIconTip)).toHaveLength(1);
+  render(<ReservedRoleBadge role={reservedRole} />);
+  expect(screen.getByTestId('reservedRoleBadgeTooltip')).toBeInTheDocument();
 });
 
 test('it renders nothing for an unreserved role', () => {
-  const wrapper = shallow(<ReservedRoleBadge role={unreservedRole} />);
-  expect(wrapper.find('*')).toHaveLength(0);
+  const { container } = render(<ReservedRoleBadge role={unreservedRole} />);
+  expect(container).toBeEmptyDOMElement();
 });

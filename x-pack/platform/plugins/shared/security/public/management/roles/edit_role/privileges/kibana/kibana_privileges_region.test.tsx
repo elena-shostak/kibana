@@ -5,7 +5,7 @@
  * 2.0.
  */
 
-import { shallow } from 'enzyme';
+import { render, screen } from '@testing-library/react';
 import React from 'react';
 
 import { coreMock } from '@kbn/core/public/mocks';
@@ -15,10 +15,19 @@ import { spacesManagerMock } from '@kbn/spaces-plugin/public/spaces_manager/mock
 import { getUiApi } from '@kbn/spaces-plugin/public/ui_api';
 
 import { KibanaPrivilegesRegion } from './kibana_privileges_region';
-import { SimplePrivilegeSection } from './simple_privilege_section';
-import { SpaceAwarePrivilegeSection } from './space_aware_privilege_section';
-import { TransformErrorSection } from './transform_error_section';
 import { RoleValidator } from '../../validate_role';
+
+jest.mock('./simple_privilege_section', () => ({
+  SimplePrivilegeSection: () => <div data-testid="simplePrivilegeSection" />,
+}));
+
+jest.mock('./space_aware_privilege_section', () => ({
+  SpaceAwarePrivilegeSection: () => <div data-testid="spaceAwarePrivilegeSection" />,
+}));
+
+jest.mock('./transform_error_section', () => ({
+  TransformErrorSection: () => <div data-testid="transformErrorSection" />,
+}));
 
 const spacesManager = spacesManagerMock.create();
 const { getStartServices } = coreMock.createSetup();
@@ -79,19 +88,20 @@ const buildProps = () => {
 describe('<KibanaPrivileges>', () => {
   it('renders without crashing', () => {
     const props = buildProps();
-    expect(shallow(<KibanaPrivilegesRegion {...props} />)).toMatchSnapshot();
+    const { container } = render(<KibanaPrivilegesRegion {...props} />);
+    expect(container).not.toBeEmptyDOMElement();
   });
 
   it('renders the space-aware privilege form', () => {
     const props = buildProps();
-    const wrapper = shallow(<KibanaPrivilegesRegion {...props} />);
-    expect(wrapper.find(SpaceAwarePrivilegeSection)).toHaveLength(1);
+    render(<KibanaPrivilegesRegion {...props} />);
+    expect(screen.getByTestId('spaceAwarePrivilegeSection')).toBeInTheDocument();
   });
 
   it('renders simple privilege form when spaces is disabled', () => {
     const props = buildProps();
-    const wrapper = shallow(<KibanaPrivilegesRegion {...props} spacesEnabled={false} />);
-    expect(wrapper.find(SimplePrivilegeSection)).toHaveLength(1);
+    render(<KibanaPrivilegesRegion {...props} spacesEnabled={false} />);
+    expect(screen.getByTestId('simplePrivilegeSection')).toBeInTheDocument();
   });
 
   it('renders the transform error section when the role has a transform error', () => {
@@ -100,8 +110,8 @@ describe('<KibanaPrivileges>', () => {
       { reason: 'kibana:reserved_privileges_mixed', state: [] },
     ];
 
-    const wrapper = shallow(<KibanaPrivilegesRegion {...props} />);
-    expect(wrapper.find(SpaceAwarePrivilegeSection)).toHaveLength(0);
-    expect(wrapper.find(TransformErrorSection)).toHaveLength(1);
+    render(<KibanaPrivilegesRegion {...props} />);
+    expect(screen.queryByTestId('spaceAwarePrivilegeSection')).not.toBeInTheDocument();
+    expect(screen.getByTestId('transformErrorSection')).toBeInTheDocument();
   });
 });

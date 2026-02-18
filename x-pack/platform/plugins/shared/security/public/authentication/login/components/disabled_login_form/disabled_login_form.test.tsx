@@ -5,15 +5,17 @@
  * 2.0.
  */
 
-import { shallow } from 'enzyme';
+import { render, screen } from '@testing-library/react';
 import React from 'react';
 
 import { DisabledLoginForm } from './disabled_login_form';
 
 describe('DisabledLoginForm', () => {
   it('renders as expected', () => {
-    expect(
-      shallow(<DisabledLoginForm title={'disabled message title'} message={'disabled message'} />)
-    ).toMatchSnapshot();
+    render(
+      <DisabledLoginForm title={'disabled message title'} message={'disabled message'} />
+    );
+    expect(screen.getByText('disabled message title')).toBeInTheDocument();
+    expect(screen.getByText('disabled message')).toBeInTheDocument();
   });
 });
