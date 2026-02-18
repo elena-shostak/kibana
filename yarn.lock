@@ -14592,10 +14592,10 @@
   dependencies:
     undici-types "~6.21.0"
 
-"@types/nodemailer@7.0.4":
-  version "7.0.4"
-  resolved "https://registry.yarnpkg.com/@types/nodemailer/-/nodemailer-7.0.4.tgz#1a38d8bce85f7da066cc7fd6f57090bc741860f0"
-  integrity sha512-ee8fxWqOchH+Hv6MDDNNy028kwvVnLplrStm4Zf/3uHWw5zzo8FoYYeffpJtGs2wWysEumMH0ZIdMGMY1eMAow==
+"@types/nodemailer@7.0.6":
+  version "7.0.6"
+  resolved "https://registry.yarnpkg.com/@types/nodemailer/-/nodemailer-7.0.6.tgz#cbeb4bdf0c8457f43eeb0caee5000248b650c42c"
+  integrity sha512-+aRevAyUOCUjvCpq+KSJOjxRNxNRqw7jp8AvT2H4As1BfQA6hBTJ2x65DYu7Cre3h5PQZhMky3bc9zsBCXdvGA==
   dependencies:
     "@aws-sdk/client-sesv2" "^3.839.0"
     "@types/node" "*"
@@ -21504,12 +21504,12 @@ fast-uri@^3.0.1:
   resolved "https://registry.yarnpkg.com/fast-uri/-/fast-uri-3.0.3.tgz#892a1c91802d5d7860de728f18608a0573142241"
   integrity sha512-aLrHthzCjH5He4Z2H9YZ+v6Ujb9ocRuW6ZzkJQOrTxleEijANq4v1TsaPaVG1PZcuurEzrLcWRyYBYXD5cEiaw==
 
-fast-xml-parser@5.2.5, fast-xml-parser@5.3.4, fast-xml-parser@^4.5.0:
-  version "5.3.4"
-  resolved "https://registry.yarnpkg.com/fast-xml-parser/-/fast-xml-parser-5.3.4.tgz#06f39aafffdbc97bef0321e626c7ddd06a043ecf"
-  integrity sha512-EFd6afGmXlCx8H8WTZHhAoDaWaGyuIBoZJ2mknrNxug+aZKjkp0a0dlars9Izl+jF+7Gu1/5f/2h68cQpe0IiA==
+fast-xml-parser@5.2.5, fast-xml-parser@5.3.6, fast-xml-parser@^4.5.0:
+  version "5.3.6"
+  resolved "https://registry.yarnpkg.com/fast-xml-parser/-/fast-xml-parser-5.3.6.tgz#85a69117ca156b1b3c52e426495b6de266cb6a4b"
+  integrity sha512-QNI3sAvSvaOiaMl8FYU4trnEzCwiRr8XMWgAHzlrWpTSj+QaCSvOf1h82OEP1s4hiAXhnbXSyFWCf4ldZzZRVA==
   dependencies:
-    strnum "^2.1.0"
+    strnum "^2.1.2"
 
 fastest-levenshtein@1.0.16, fastest-levenshtein@^1.0.12, fastest-levenshtein@^1.0.16:
   version "1.0.16"
