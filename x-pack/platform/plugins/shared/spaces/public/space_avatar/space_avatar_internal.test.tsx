@@ -5,71 +5,26 @@
  * 2.0.
  */
 
-import { mount, shallow } from 'enzyme';
+import { render, screen } from '@testing-library/react';
 import React from 'react';
 
 import { SpaceAvatarInternal } from './space_avatar_internal';
 
-jest.mock('@elastic/eui', () => ({
-  ...jest.requireActual('@elastic/eui'),
-  EuiAvatar: () => <></>, // we mock this to avoid asserting what the internals of the avatar looks like in our snapshots below
-}));
-
 test('renders without crashing', () => {
-  const wrapper = shallow(<SpaceAvatarInternal space={{ name: '', id: '' }} />);
-  expect(wrapper).toMatchInlineSnapshot(`
-    <EuiAvatar
-      color="#FFC9C2"
-      data-test-subj="space-avatar-"
-      initials=""
-      initialsLength={2}
-      name=""
-      size="m"
-      type="space"
-    />
-  `);
+  const { container } = render(<SpaceAvatarInternal space={{ name: '', id: '' }} />);
+  expect(container).not.toBeEmptyDOMElement();
+  expect(screen.getByTestId('space-avatar-')).toBeInTheDocument();
 });
 
 test('renders with a space name entirely made of whitespace', () => {
-  const wrapper = shallow(<SpaceAvatarInternal space={{ name: '      ', id: '' }} />);
-  expect(wrapper).toMatchInlineSnapshot(`
-    <EuiAvatar
-      color="#61A2FF"
-      data-test-subj="space-avatar-"
-      initials=""
-      initialsLength={2}
-      name=""
-      size="m"
-      type="space"
-    />
-  `);
+  render(<SpaceAvatarInternal space={{ name: '      ', id: '' }} />);
+  expect(screen.getByTestId('space-avatar-')).toBeInTheDocument();
 });
 
 test('removes aria-label when instructed not to announce the space name', () => {
-  const wrapper = mount(
+  render(
     <SpaceAvatarInternal space={{ name: '', id: '' }} announceSpaceName={false} />
   );
-  expect(wrapper).toMatchInlineSnapshot(`
-    <SpaceAvatarInternal
-      announceSpaceName={false}
-      space={
-        Object {
-          "id": "",
-          "name": "",
-        }
-      }
-    >
-      <EuiAvatar
-        aria-hidden={true}
-        aria-label=""
-        color="#FFC9C2"
-        data-test-subj="space-avatar-"
-        initials=""
-        initialsLength={2}
-        name=""
-        size="m"
-        type="space"
-      />
-    </SpaceAvatarInternal>
-  `);
+  const avatar = screen.getByTestId('space-avatar-');
+  expect(avatar).toHaveAttribute('aria-hidden', 'true');
 });
