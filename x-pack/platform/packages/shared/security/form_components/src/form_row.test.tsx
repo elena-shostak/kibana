@@ -5,40 +5,61 @@
  * 2.0.
  */
 
-import { EuiFormRow } from '@elastic/eui';
-import { mount } from 'enzyme';
+import { render, screen } from '@testing-library/react';
 import { Formik } from 'formik';
 import React from 'react';
 
 import { FormRow } from './form_row';
 
 describe('FormRow', () => {
-  it('should render form row with correct error states', () => {
-    const assertions = [
-      { error: 'Error', touched: true, isInvalid: true },
-      { error: 'Error', touched: false, isInvalid: false },
-      { error: undefined, touched: true, isInvalid: false },
-    ];
-    assertions.forEach(({ error, touched, isInvalid }) => {
-      const wrapper = mount(
-        <Formik
-          onSubmit={jest.fn()}
-          initialValues={{ email: '' }}
-          initialErrors={{ email: error }}
-          initialTouched={{ email: touched }}
-        >
-          <FormRow>
-            <input name="email" />
-          </FormRow>
-        </Formik>
-      );
+  it('should display error when field is touched and has error', () => {
+    render(
+      <Formik
+        onSubmit={jest.fn()}
+        initialValues={{ email: '' }}
+        initialErrors={{ email: 'Email is required' }}
+        initialTouched={{ email: true }}
+      >
+        <FormRow>
+          <input name="email" />
+        </FormRow>
+      </Formik>
+    );
 
-      expect(wrapper.find(EuiFormRow).props()).toEqual(
-        expect.objectContaining({
-          error,
-          isInvalid,
-        })
-      );
-    });
+    expect(screen.getByText('Email is required')).toBeInTheDocument();
+  });
+
+  it('should not display error when field is not touched', () => {
+    render(
+      <Formik
+        onSubmit={jest.fn()}
+        initialValues={{ email: '' }}
+        initialErrors={{ email: 'Email is required' }}
+        initialTouched={{ email: false }}
+      >
+        <FormRow>
+          <input name="email" />
+        </FormRow>
+      </Formik>
+    );
+
+    expect(screen.queryByText('Email is required')).not.toBeInTheDocument();
+  });
+
+  it('should not display error when there is no error', () => {
+    render(
+      <Formik
+        onSubmit={jest.fn()}
+        initialValues={{ email: '' }}
+        initialErrors={{}}
+        initialTouched={{ email: true }}
+      >
+        <FormRow>
+          <input name="email" />
+        </FormRow>
+      </Formik>
+    );
+
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
   });
 });
