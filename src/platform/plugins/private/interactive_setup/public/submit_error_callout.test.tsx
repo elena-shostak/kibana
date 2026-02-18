@@ -8,8 +8,10 @@
  */
 
 import { errors } from '@elastic/elasticsearch';
-import { shallow } from 'enzyme';
+import { render, screen } from '@testing-library/react';
 import React from 'react';
+
+import { I18nProvider } from '@kbn/i18n-react';
 
 import { SubmitErrorCallout } from './submit_error_callout';
 import {
@@ -23,24 +25,21 @@ import {
 } from '../common';
 import { interactiveSetupMock } from '../server/mocks';
 
+const renderWithIntl = (ui: React.ReactElement) =>
+  render(<I18nProvider>{ui}</I18nProvider>);
+
 describe('SubmitErrorCallout', () => {
   it('renders unknown errors correctly', async () => {
-    const wrapper = shallow(
+    renderWithIntl(
       <SubmitErrorCallout error={new Error('Unknown error')} defaultTitle="Something went wrong" />
     );
 
-    expect(wrapper).toMatchInlineSnapshot(`
-      <EuiCallOut
-        color="danger"
-        title="Something went wrong"
-      >
-        Unknown error
-      </EuiCallOut>
-    `);
+    expect(screen.getByText('Something went wrong')).toBeInTheDocument();
+    expect(screen.getByText('Unknown error')).toBeInTheDocument();
   });
 
   it('renders 403 errors correctly', async () => {
-    const wrapper = shallow(
+    renderWithIntl(
       <SubmitErrorCallout
         error={
           new errors.ResponseError(
@@ -55,26 +54,12 @@ describe('SubmitErrorCallout', () => {
       />
     );
 
-    expect(wrapper).toMatchInlineSnapshot(`
-      <EuiCallOut
-        color="danger"
-        title={
-          <Memo(MemoizedFormattedMessage)
-            defaultMessage="Verification required"
-            id="interactiveSetup.submitErrorCallout.forbiddenErrorTitle"
-          />
-        }
-      >
-        <MemoizedFormattedMessage
-          defaultMessage="Retry to configure Elastic."
-          id="interactiveSetup.submitErrorCallout.forbiddenErrorDescription"
-        />
-      </EuiCallOut>
-    `);
+    expect(screen.getByText('Verification required')).toBeInTheDocument();
+    expect(screen.getByText('Retry to configure Elastic.')).toBeInTheDocument();
   });
 
   it('renders 404 errors correctly', async () => {
-    const wrapper = shallow(
+    renderWithIntl(
       <SubmitErrorCallout
         error={
           new errors.ResponseError(
@@ -89,31 +74,12 @@ describe('SubmitErrorCallout', () => {
       />
     );
 
-    expect(wrapper).toMatchInlineSnapshot(`
-      <EuiCallOut
-        announceOnMount={true}
-        color="primary"
-        title={
-          <Memo(MemoizedFormattedMessage)
-            defaultMessage="Elastic is already configured"
-            id="interactiveSetup.submitErrorCallout.elasticsearchConnectionConfiguredErrorTitle"
-          />
-        }
-      >
-        <EuiButton
-          onClick={[Function]}
-        >
-          <MemoizedFormattedMessage
-            defaultMessage="Continue to Kibana"
-            id="interactiveSetup.submitErrorCallout.elasticsearchConnectionConfiguredSubmitButton"
-          />
-        </EuiButton>
-      </EuiCallOut>
-    `);
+    expect(screen.getByText('Elastic is already configured')).toBeInTheDocument();
+    expect(screen.getByText('Continue to Kibana')).toBeInTheDocument();
   });
 
   it('renders ERROR_CONFIGURE_FAILURE errors correctly', async () => {
-    const wrapper = shallow(
+    renderWithIntl(
       <SubmitErrorCallout
         error={
           new errors.ResponseError(
@@ -129,28 +95,13 @@ describe('SubmitErrorCallout', () => {
       />
     );
 
-    expect(wrapper).toMatchInlineSnapshot(`
-      <EuiCallOut
-        color="danger"
-        title="Something went wrong"
-      >
-        <MemoizedFormattedMessage
-          defaultMessage="Retry or update the {config} file manually."
-          id="interactiveSetup.submitErrorCallout.kibanaConfigFailureErrorDescription"
-          values={
-            Object {
-              "config": <strong>
-                kibana.yml
-              </strong>,
-            }
-          }
-        />
-      </EuiCallOut>
-    `);
+    expect(screen.getByText('Something went wrong')).toBeInTheDocument();
+    expect(screen.getByText(/Retry or update the/)).toBeInTheDocument();
+    expect(screen.getByText('kibana.yml')).toBeInTheDocument();
   });
 
   it('renders ERROR_ELASTICSEARCH_CONNECTION_CONFIGURED errors correctly', async () => {
-    const wrapper = shallow(
+    renderWithIntl(
       <SubmitErrorCallout
         error={
           new errors.ResponseError(
@@ -166,31 +117,12 @@ describe('SubmitErrorCallout', () => {
       />
     );
 
-    expect(wrapper).toMatchInlineSnapshot(`
-      <EuiCallOut
-        announceOnMount={true}
-        color="primary"
-        title={
-          <Memo(MemoizedFormattedMessage)
-            defaultMessage="Elastic is already configured"
-            id="interactiveSetup.submitErrorCallout.elasticsearchConnectionConfiguredErrorTitle"
-          />
-        }
-      >
-        <EuiButton
-          onClick={[Function]}
-        >
-          <MemoizedFormattedMessage
-            defaultMessage="Continue to Kibana"
-            id="interactiveSetup.submitErrorCallout.elasticsearchConnectionConfiguredSubmitButton"
-          />
-        </EuiButton>
-      </EuiCallOut>
-    `);
+    expect(screen.getByText('Elastic is already configured')).toBeInTheDocument();
+    expect(screen.getByText('Continue to Kibana')).toBeInTheDocument();
   });
 
   it('renders ERROR_ENROLL_FAILURE errors correctly', async () => {
-    const wrapper = shallow(
+    renderWithIntl(
       <SubmitErrorCallout
         error={
           new errors.ResponseError(
@@ -206,21 +138,14 @@ describe('SubmitErrorCallout', () => {
       />
     );
 
-    expect(wrapper).toMatchInlineSnapshot(`
-      <EuiCallOut
-        color="danger"
-        title="Something went wrong"
-      >
-        <MemoizedFormattedMessage
-          defaultMessage="Generate a new enrollment token or configure manually."
-          id="interactiveSetup.submitErrorCallout.EnrollFailureErrorDescription"
-        />
-      </EuiCallOut>
-    `);
+    expect(screen.getByText('Something went wrong')).toBeInTheDocument();
+    expect(
+      screen.getByText('Generate a new enrollment token or configure manually.')
+    ).toBeInTheDocument();
   });
 
   it('renders ERROR_KIBANA_CONFIG_FAILURE errors correctly', async () => {
-    const wrapper = shallow(
+    renderWithIntl(
       <SubmitErrorCallout
         error={
           new errors.ResponseError(
@@ -236,33 +161,12 @@ describe('SubmitErrorCallout', () => {
       />
     );
 
-    expect(wrapper).toMatchInlineSnapshot(`
-      <EuiCallOut
-        color="danger"
-        title={
-          <Memo(MemoizedFormattedMessage)
-            defaultMessage="Couldn't write to config file"
-            id="interactiveSetup.submitErrorCallout.kibanaConfigNotWritableErrorTitle"
-          />
-        }
-      >
-        <MemoizedFormattedMessage
-          defaultMessage="Retry or update the {config} file manually."
-          id="interactiveSetup.submitErrorCallout.kibanaConfigFailureErrorDescription"
-          values={
-            Object {
-              "config": <strong>
-                kibana.yml
-              </strong>,
-            }
-          }
-        />
-      </EuiCallOut>
-    `);
+    expect(screen.getByText("Couldn't write to config file")).toBeInTheDocument();
+    expect(screen.getByText(/Retry or update the/)).toBeInTheDocument();
   });
 
   it('renders ERROR_KIBANA_CONFIG_NOT_WRITABLE errors correctly', async () => {
-    const wrapper = shallow(
+    renderWithIntl(
       <SubmitErrorCallout
         error={
           new errors.ResponseError(
@@ -278,33 +182,12 @@ describe('SubmitErrorCallout', () => {
       />
     );
 
-    expect(wrapper).toMatchInlineSnapshot(`
-      <EuiCallOut
-        color="danger"
-        title={
-          <Memo(MemoizedFormattedMessage)
-            defaultMessage="Couldn't write to config file"
-            id="interactiveSetup.submitErrorCallout.kibanaConfigNotWritableErrorTitle"
-          />
-        }
-      >
-        <MemoizedFormattedMessage
-          defaultMessage="Check the file permissions and ensure {config} is writable by the Kibana process."
-          id="interactiveSetup.submitErrorCallout.kibanaConfigNotWritableErrorDescription"
-          values={
-            Object {
-              "config": <strong>
-                kibana.yml
-              </strong>,
-            }
-          }
-        />
-      </EuiCallOut>
-    `);
+    expect(screen.getByText("Couldn't write to config file")).toBeInTheDocument();
+    expect(screen.getByText(/Check the file permissions/)).toBeInTheDocument();
   });
 
   it('renders ERROR_OUTSIDE_PREBOOT_STAGE errors correctly', async () => {
-    const wrapper = shallow(
+    renderWithIntl(
       <SubmitErrorCallout
         error={
           new errors.ResponseError(
@@ -320,31 +203,12 @@ describe('SubmitErrorCallout', () => {
       />
     );
 
-    expect(wrapper).toMatchInlineSnapshot(`
-      <EuiCallOut
-        announceOnMount={true}
-        color="primary"
-        title={
-          <Memo(MemoizedFormattedMessage)
-            defaultMessage="Elastic is already configured"
-            id="interactiveSetup.submitErrorCallout.elasticsearchConnectionConfiguredErrorTitle"
-          />
-        }
-      >
-        <EuiButton
-          onClick={[Function]}
-        >
-          <MemoizedFormattedMessage
-            defaultMessage="Continue to Kibana"
-            id="interactiveSetup.submitErrorCallout.elasticsearchConnectionConfiguredSubmitButton"
-          />
-        </EuiButton>
-      </EuiCallOut>
-    `);
+    expect(screen.getByText('Elastic is already configured')).toBeInTheDocument();
+    expect(screen.getByText('Continue to Kibana')).toBeInTheDocument();
   });
 
   it('renders ERROR_PING_FAILURE errors correctly', async () => {
-    const wrapper = shallow(
+    renderWithIntl(
       <SubmitErrorCallout
         error={
           new errors.ResponseError(
@@ -360,21 +224,7 @@ describe('SubmitErrorCallout', () => {
       />
     );
 
-    expect(wrapper).toMatchInlineSnapshot(`
-      <EuiCallOut
-        color="danger"
-        title={
-          <Memo(MemoizedFormattedMessage)
-            defaultMessage="Couldn't connect to cluster"
-            id="interactiveSetup.submitErrorCallout.pingFailureErrorTitle"
-          />
-        }
-      >
-        <MemoizedFormattedMessage
-          defaultMessage="Check the address and retry."
-          id="interactiveSetup.submitErrorCallout.pingFailureErrorDescription"
-        />
-      </EuiCallOut>
-    `);
+    expect(screen.getByText("Couldn't connect to cluster")).toBeInTheDocument();
+    expect(screen.getByText('Check the address and retry.')).toBeInTheDocument();
   });
 });
