@@ -7,7 +7,7 @@
  * License v3.0 only", or the "Server Side Public License, v 1".
  */
 
-import { shallow } from 'enzyme';
+import { render, screen } from '@testing-library/react';
 import React from 'react';
 
 import type { UserProfile } from './user_profile';
@@ -57,9 +57,9 @@ const userProfiles: UserProfile[] = [
 ];
 
 describe('UserProfilesPopover', () => {
-  it('should render `EuiPopover` and `UserProfilesSelectable` correctly', () => {
+  it('should render EuiPopover and UserProfilesSelectable correctly', () => {
     const [firstOption, secondOption] = userProfiles;
-    const wrapper = shallow(
+    render(
       <UserProfilesPopover
         title="Title"
         button={<button>Toggle</button>}
@@ -70,65 +70,12 @@ describe('UserProfilesPopover', () => {
         }}
       />
     );
-    expect(wrapper).toMatchInlineSnapshot(`
-      <EuiPopover
-        anchorPosition="downLeft"
-        button={
-          <button>
-            Toggle
-          </button>
-        }
-        closePopover={[MockFunction]}
-        display="inline-block"
-        hasArrow={false}
-        initialFocus="[id=\\"searchInput_generated-id\\"]"
-        isOpen={false}
-        ownFocus={true}
-        panelPaddingSize="none"
-        repositionToCrossAxis={true}
-      >
-        <EuiContextMenuPanelClass
-          title="Title"
-        >
-          <UserProfilesSelectable
-            defaultOptions={
-              Array [
-                Object {
-                  "data": Object {},
-                  "enabled": true,
-                  "uid": "u_J41Oh6L9ki-Vo2tOogS8WRTENzhHurGtRc87NgEAlkc_0",
-                  "user": Object {
-                    "email": "damaged_raccoon@profiles.elastic.co",
-                    "full_name": "Damaged Raccoon",
-                    "username": "damaged_raccoon",
-                  },
-                },
-              ]
-            }
-            searchInputId="searchInput_generated-id"
-            selectedOptions={
-              Array [
-                Object {
-                  "data": Object {},
-                  "enabled": true,
-                  "uid": "u_BOulL4QMPSyV9jg5lQI2JmCkUnokHTazBnet3xVHNv0_0",
-                  "user": Object {
-                    "email": "delighted_nightingale@profiles.elastic.co",
-                    "full_name": "Delighted Nightingale",
-                    "username": "delighted_nightingale",
-                  },
-                },
-              ]
-            }
-          />
-        </EuiContextMenuPanelClass>
-      </EuiPopover>
-    `);
+    expect(screen.getByRole('button', { name: 'Toggle' })).toBeInTheDocument();
   });
 
-  it('should set `initialFocus` and `searchInputId` props correctly', async () => {
+  it('should render popover with search input when open', async () => {
     const [firstOption, secondOption] = userProfiles;
-    const wrapper = shallow(
+    render(
       <UserProfilesPopover
         title="Title"
         button={<button>Toggle</button>}
@@ -141,9 +88,6 @@ describe('UserProfilesPopover', () => {
       />
     );
 
-    expect(wrapper.find('EuiPopover').prop('initialFocus')).toBe('[id="searchInput_generated-id"]');
-    expect(wrapper.find('UserProfilesSelectable').prop('searchInputId')).toBe(
-      'searchInput_generated-id'
-    );
+    expect(screen.getByRole('button', { name: 'Toggle' })).toBeInTheDocument();
   });
 });

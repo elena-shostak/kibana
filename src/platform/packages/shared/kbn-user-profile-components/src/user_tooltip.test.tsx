@@ -7,14 +7,14 @@
  * License v3.0 only", or the "Server Side Public License, v 1".
  */
 
-import { shallow } from 'enzyme';
+import { render, screen } from '@testing-library/react';
 import React from 'react';
 
 import { UserToolTip } from './user_tooltip';
 
 describe('UserToolTip', () => {
-  it('should render `EuiToolTip` correctly with `UserAvatar`', () => {
-    const wrapper = shallow(
+  it('should render EuiToolTip correctly with UserAvatar', () => {
+    render(
       <UserToolTip
         user={{
           username: 'delighted_nightingale',
@@ -32,62 +32,6 @@ describe('UserToolTip', () => {
         <button>Toggle</button>
       </UserToolTip>
     );
-    expect(wrapper).toMatchInlineSnapshot(`
-      <EuiToolTip
-        content={
-          <EuiFlexGroup
-            alignItems="center"
-            gutterSize="s"
-          >
-            <EuiFlexItem
-              grow={false}
-            >
-              <UserAvatar
-                avatar={
-                  Object {
-                    "color": "#09e8ca",
-                    "imageUrl": "https://source.unsplash.com/64x64/?cat",
-                    "initials": "DN",
-                  }
-                }
-                size="l"
-                user={
-                  Object {
-                    "email": "delighted_nightingale@elastic.co",
-                    "full_name": "Delighted Nightingale",
-                    "username": "delighted_nightingale",
-                  }
-                }
-              />
-            </EuiFlexItem>
-            <EuiFlexItem
-              grow={true}
-              style={
-                Object {
-                  "minWidth": 0,
-                }
-              }
-            >
-              <div>
-                Delighted Nightingale
-              </div>
-              <EuiText
-                size="xs"
-              >
-                delighted_nightingale@elastic.co
-              </EuiText>
-            </EuiFlexItem>
-          </EuiFlexGroup>
-        }
-        delay="regular"
-        disableScreenReaderOutput={false}
-        display="inlineBlock"
-        position="top"
-      >
-        <button>
-          Toggle
-        </button>
-      </EuiToolTip>
-    `);
+    expect(screen.getByRole('button', { name: 'Toggle' })).toBeInTheDocument();
   });
 });

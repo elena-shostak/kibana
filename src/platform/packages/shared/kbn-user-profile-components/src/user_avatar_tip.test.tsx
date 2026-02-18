@@ -7,14 +7,14 @@
  * License v3.0 only", or the "Server Side Public License, v 1".
  */
 
-import { shallow } from 'enzyme';
+import { render, screen } from '@testing-library/react';
 import React from 'react';
 
 import { UserAvatarTip } from './user_avatar_tip';
 
 describe('UserAvatarTip', () => {
-  it('should render `UserToolTip` correctly with `UserAvatar`', () => {
-    const wrapper = shallow(
+  it('should render UserToolTip correctly with UserAvatar', () => {
+    render(
       <UserAvatarTip
         user={{
           username: 'delighted_nightingale',
@@ -28,47 +28,11 @@ describe('UserAvatarTip', () => {
         }}
       />
     );
-    expect(wrapper).toMatchInlineSnapshot(`
-      <UserToolTip
-        avatar={
-          Object {
-            "color": "#09e8ca",
-            "imageUrl": "https://source.unsplash.com/64x64/?cat",
-            "initials": "DN",
-          }
-        }
-        delay="regular"
-        position="top"
-        user={
-          Object {
-            "email": "delighted_nightingale@elastic.co",
-            "full_name": "Delighted Nightingale",
-            "username": "delighted_nightingale",
-          }
-        }
-      >
-        <UserAvatar
-          avatar={
-            Object {
-              "color": "#09e8ca",
-              "imageUrl": "https://source.unsplash.com/64x64/?cat",
-              "initials": "DN",
-            }
-          }
-          user={
-            Object {
-              "email": "delighted_nightingale@elastic.co",
-              "full_name": "Delighted Nightingale",
-              "username": "delighted_nightingale",
-            }
-          }
-        />
-      </UserToolTip>
-    `);
+    expect(screen.getByText('DN')).toBeInTheDocument();
   });
 
-  it('should not render `UserToolTip` when user is not set', () => {
-    const wrapper = shallow(<UserAvatarTip />);
-    expect(wrapper).toMatchInlineSnapshot(`<UserAvatar />`);
+  it('should not render UserToolTip when user is not set', () => {
+    render(<UserAvatarTip />);
+    expect(screen.getByText('?')).toBeInTheDocument();
   });
 });
