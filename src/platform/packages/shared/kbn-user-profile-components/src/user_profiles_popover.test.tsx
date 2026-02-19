@@ -7,8 +7,10 @@
  * License v3.0 only", or the "Server Side Public License, v 1".
  */
 
-import { render, screen } from '@testing-library/react';
+import { render } from '@testing-library/react';
 import React from 'react';
+
+import { IntlProvider } from '@kbn/i18n-react';
 
 import type { UserProfile } from './user_profile';
 import { UserProfilesPopover } from './user_profiles_popover';
@@ -59,7 +61,7 @@ const userProfiles: UserProfile[] = [
 describe('UserProfilesPopover', () => {
   it('should render EuiPopover and UserProfilesSelectable correctly', () => {
     const [firstOption, secondOption] = userProfiles;
-    render(
+    const { container } = render(
       <UserProfilesPopover
         title="Title"
         button={<button>Toggle</button>}
@@ -70,24 +72,46 @@ describe('UserProfilesPopover', () => {
         }}
       />
     );
-    expect(screen.getByRole('button', { name: 'Toggle' })).toBeInTheDocument();
+    expect(container).toMatchInlineSnapshot(`
+      <div>
+        <div
+          class="euiPopover emotion-euiPopover-inline-block"
+        >
+          <button>
+            Toggle
+          </button>
+        </div>
+      </div>
+    `);
   });
 
   it('should render popover with search input when open', async () => {
     const [firstOption, secondOption] = userProfiles;
-    render(
-      <UserProfilesPopover
-        title="Title"
-        button={<button>Toggle</button>}
-        closePopover={jest.fn()}
-        selectableProps={{
-          selectedOptions: [firstOption],
-          defaultOptions: [secondOption],
-        }}
-        isOpen
-      />
+    const { container } = render(
+      <IntlProvider locale="en">
+        <UserProfilesPopover
+          title="Title"
+          button={<button>Toggle</button>}
+          closePopover={jest.fn()}
+          selectableProps={{
+            selectedOptions: [firstOption],
+            defaultOptions: [secondOption],
+          }}
+          isOpen
+        />
+      </IntlProvider>
     );
 
-    expect(screen.getByRole('button', { name: 'Toggle' })).toBeInTheDocument();
+    expect(container).toMatchInlineSnapshot(`
+      <div>
+        <div
+          class="euiPopover euiPopover-isOpen emotion-euiPopover-inline-block"
+        >
+          <button>
+            Toggle
+          </button>
+        </div>
+      </div>
+    `);
   });
 });

@@ -7,14 +7,14 @@
  * License v3.0 only", or the "Server Side Public License, v 1".
  */
 
-import { render, screen } from '@testing-library/react';
+import { render } from '@testing-library/react';
 import React from 'react';
 
 import { UserAvatar } from './user_avatar';
 
 describe('UserAvatar', () => {
   it('should render EuiAvatar correctly with image avatar', () => {
-    render(
+    const { container } = render(
       <UserAvatar
         user={{
           username: 'delighted_nightingale',
@@ -28,12 +28,21 @@ describe('UserAvatar', () => {
         }}
       />
     );
-    const avatar = screen.getByRole('img', { hidden: true });
-    expect(avatar).toBeInTheDocument();
+    expect(container).toMatchInlineSnapshot(`
+      <div>
+        <div
+          aria-label="Delighted Nightingale (delighted_nightingale@elastic.co)"
+          class="euiAvatar euiAvatar--m euiAvatar--user emotion-euiAvatar-user-m-uppercase-plain"
+          role="img"
+          style="background-image: url(https://source.unsplash.com/64x64/?cat);"
+          title="Delighted Nightingale (delighted_nightingale@elastic.co)"
+        />
+      </div>
+    `);
   });
 
   it('should render EuiAvatar correctly with initials avatar', () => {
-    render(
+    const { container } = render(
       <UserAvatar
         user={{
           username: 'delighted_nightingale',
@@ -47,11 +56,27 @@ describe('UserAvatar', () => {
         }}
       />
     );
-    expect(screen.getByText('DN')).toBeInTheDocument();
+    expect(container).toMatchInlineSnapshot(`
+      <div>
+        <div
+          aria-label="Delighted Nightingale (delighted_nightingale@elastic.co)"
+          class="euiAvatar euiAvatar--m euiAvatar--user emotion-euiAvatar-user-m-uppercase"
+          role="img"
+          style="background-color: rgb(9, 232, 202); color: rgb(0, 0, 0);"
+          title="Delighted Nightingale (delighted_nightingale@elastic.co)"
+        >
+          <span
+            aria-hidden="true"
+          >
+            DN
+          </span>
+        </div>
+      </div>
+    `);
   });
 
   it('should render EuiAvatar correctly without avatar data', () => {
-    render(
+    const { container } = render(
       <UserAvatar
         user={{
           username: 'delighted_nightingale',
@@ -60,11 +85,43 @@ describe('UserAvatar', () => {
         }}
       />
     );
-    expect(screen.getByText('DN')).toBeInTheDocument();
+    expect(container).toMatchInlineSnapshot(`
+      <div>
+        <div
+          aria-label="Delighted Nightingale (delighted_nightingale@elastic.co)"
+          class="euiAvatar euiAvatar--m euiAvatar--user emotion-euiAvatar-user-m-uppercase"
+          role="img"
+          style="background-color: rgb(234, 174, 1); color: rgb(0, 0, 0);"
+          title="Delighted Nightingale (delighted_nightingale@elastic.co)"
+        >
+          <span
+            aria-hidden="true"
+          >
+            DN
+          </span>
+        </div>
+      </div>
+    `);
   });
 
   it('should render EuiAvatar correctly without user data', () => {
-    render(<UserAvatar />);
-    expect(screen.getByText('?')).toBeInTheDocument();
+    const { container } = render(<UserAvatar />);
+    expect(container).toMatchInlineSnapshot(`
+      <div>
+        <div
+          aria-label=""
+          class="euiAvatar euiAvatar--m euiAvatar--user emotion-euiAvatar-user-m-uppercase"
+          role="img"
+          style="background-color: rgb(236, 241, 249); color: rgb(0, 0, 0);"
+          title=""
+        >
+          <span
+            aria-hidden="true"
+          >
+            ?
+          </span>
+        </div>
+      </div>
+    `);
   });
 });

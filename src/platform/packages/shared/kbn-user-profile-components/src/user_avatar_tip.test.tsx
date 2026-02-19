@@ -7,14 +7,14 @@
  * License v3.0 only", or the "Server Side Public License, v 1".
  */
 
-import { render, screen } from '@testing-library/react';
+import { render } from '@testing-library/react';
 import React from 'react';
 
 import { UserAvatarTip } from './user_avatar_tip';
 
 describe('UserAvatarTip', () => {
   it('should render UserToolTip correctly with UserAvatar', () => {
-    render(
+    const { container } = render(
       <UserAvatarTip
         user={{
           username: 'delighted_nightingale',
@@ -28,11 +28,42 @@ describe('UserAvatarTip', () => {
         }}
       />
     );
-    expect(screen.getByText('DN')).toBeInTheDocument();
+    expect(container).toMatchInlineSnapshot(`
+      <div>
+        <span
+          class="euiToolTipAnchor emotion-euiToolTipAnchor-inlineBlock"
+          id="generated-id-wrapper"
+        >
+          <div
+            aria-label="Delighted Nightingale (delighted_nightingale@elastic.co)"
+            class="euiAvatar euiAvatar--m euiAvatar--user emotion-euiAvatar-user-m-uppercase-plain"
+            role="img"
+            style="background-image: url(https://source.unsplash.com/64x64/?cat);"
+            title="Delighted Nightingale (delighted_nightingale@elastic.co)"
+          />
+        </span>
+      </div>
+    `);
   });
 
   it('should not render UserToolTip when user is not set', () => {
-    render(<UserAvatarTip />);
-    expect(screen.getByText('?')).toBeInTheDocument();
+    const { container } = render(<UserAvatarTip />);
+    expect(container).toMatchInlineSnapshot(`
+      <div>
+        <div
+          aria-label=""
+          class="euiAvatar euiAvatar--m euiAvatar--user emotion-euiAvatar-user-m-uppercase"
+          role="img"
+          style="background-color: rgb(236, 241, 249); color: rgb(0, 0, 0);"
+          title=""
+        >
+          <span
+            aria-hidden="true"
+          >
+            ?
+          </span>
+        </div>
+      </div>
+    `);
   });
 });

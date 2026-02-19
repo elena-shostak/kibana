@@ -7,14 +7,14 @@
  * License v3.0 only", or the "Server Side Public License, v 1".
  */
 
-import { render, screen } from '@testing-library/react';
+import { render } from '@testing-library/react';
 import React from 'react';
 
 import { UserToolTip } from './user_tooltip';
 
 describe('UserToolTip', () => {
   it('should render EuiToolTip correctly with UserAvatar', () => {
-    render(
+    const { container } = render(
       <UserToolTip
         user={{
           username: 'delighted_nightingale',
@@ -32,6 +32,17 @@ describe('UserToolTip', () => {
         <button>Toggle</button>
       </UserToolTip>
     );
-    expect(screen.getByRole('button', { name: 'Toggle' })).toBeInTheDocument();
+    expect(container).toMatchInlineSnapshot(`
+      <div>
+        <span
+          class="euiToolTipAnchor emotion-euiToolTipAnchor-inlineBlock"
+          id="generated-id-wrapper"
+        >
+          <button>
+            Toggle
+          </button>
+        </span>
+      </div>
+    `);
   });
 });
