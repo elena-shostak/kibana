@@ -12,9 +12,10 @@ import { DisabledLoginForm } from './disabled_login_form';
 
 describe('DisabledLoginForm', () => {
   it('renders as expected', () => {
-    render(
+    const { container } = render(
       <DisabledLoginForm title={'disabled message title'} message={'disabled message'} />
     );
+    expect(container).toMatchSnapshot();
     expect(screen.getByText('disabled message title')).toBeInTheDocument();
     expect(screen.getByText('disabled message')).toBeInTheDocument();
   });
