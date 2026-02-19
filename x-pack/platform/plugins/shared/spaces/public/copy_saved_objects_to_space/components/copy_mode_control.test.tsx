@@ -13,8 +13,7 @@ import { I18nProvider } from '@kbn/i18n-react';
 import type { CopyModeControlProps } from './copy_mode_control';
 import { CopyModeControl } from './copy_mode_control';
 
-const renderWithIntl = (ui: React.ReactElement) =>
-  render(<I18nProvider>{ui}</I18nProvider>);
+const renderWithIntl = (ui: React.ReactElement) => render(<I18nProvider>{ui}</I18nProvider>);
 
 describe('CopyModeControl', () => {
   const initialValues = { createNewCopies: true, overwrite: true };
