@@ -10,7 +10,7 @@
 import { render } from '@testing-library/react';
 import React from 'react';
 
-import { IntlProvider } from '@kbn/i18n-react';
+import { __IntlProvider as IntlProvider } from '@kbn/i18n-react';
 
 import type { UserProfile } from './user_profile';
 import { UserProfilesPopover } from './user_profiles_popover';
@@ -62,15 +62,17 @@ describe('UserProfilesPopover', () => {
   it('should render EuiPopover and UserProfilesSelectable correctly', () => {
     const [firstOption, secondOption] = userProfiles;
     const { container } = render(
-      <UserProfilesPopover
-        title="Title"
-        button={<button>Toggle</button>}
-        closePopover={jest.fn()}
-        selectableProps={{
-          selectedOptions: [firstOption],
-          defaultOptions: [secondOption],
-        }}
-      />
+      <IntlProvider locale="en">
+        <UserProfilesPopover
+          title="Title"
+          button={<button>Toggle</button>}
+          closePopover={jest.fn()}
+          selectableProps={{
+            selectedOptions: [firstOption],
+            defaultOptions: [secondOption],
+          }}
+        />
+      </IntlProvider>
     );
     expect(container).toMatchInlineSnapshot(`
       <div>
