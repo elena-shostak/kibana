@@ -13,8 +13,7 @@ import { I18nProvider } from '@kbn/i18n-react';
 import { ClusterPrivileges } from './cluster_privileges';
 import type { Role } from '../../../../../../common';
 
-const renderWithIntl = (ui: React.ReactElement) =>
-  render(<I18nProvider>{ui}</I18nProvider>);
+const renderWithIntl = (ui: React.ReactElement) => render(<I18nProvider>{ui}</I18nProvider>);
 
 test('it renders without crashing', () => {
   const role: Role = {
@@ -58,7 +57,10 @@ test('it renders fields as disabled when not editable', () => {
       editable={false}
     />
   );
-  expect(screen.getByTestId('cluster-privileges-combobox')).toHaveAttribute('aria-disabled', 'true');
+  expect(screen.getByTestId('cluster-privileges-combobox')).toHaveAttribute(
+    'aria-disabled',
+    'true'
+  );
 });
 
 test('it allows for custom cluster privileges', () => {

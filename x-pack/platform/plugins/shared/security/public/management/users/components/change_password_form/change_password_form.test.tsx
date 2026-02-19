@@ -15,8 +15,7 @@ import { ChangePasswordForm } from './change_password_form';
 import type { User } from '../../../../../common';
 import { userAPIClientMock } from '../../index.mock';
 
-const renderWithIntl = (ui: React.ReactElement) =>
-  render(<I18nProvider>{ui}</I18nProvider>);
+const renderWithIntl = (ui: React.ReactElement) => render(<I18nProvider>{ui}</I18nProvider>);
 
 describe('<ChangePasswordForm>', () => {
   describe('for the current user', () => {
