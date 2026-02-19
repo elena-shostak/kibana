@@ -31,22 +31,22 @@ describe('CopyModeControl', () => {
 
     expect(updateSelection).not.toHaveBeenCalled();
 
-    fireEvent.click(screen.getByTestId('cts-copyModeControl-createNewCopiesDisabled'));
+    fireEvent.click(screen.getByLabelText(/check for existing objects/i));
     const createNewCopies = false;
 
-    fireEvent.click(screen.getByTestId('cts-copyModeControl-overwriteDisabled'));
+    fireEvent.click(screen.getByLabelText(/request action on conflict/i));
     expect(updateSelection).toHaveBeenNthCalledWith(2, { createNewCopies, overwrite: false });
 
-    fireEvent.click(screen.getByTestId('cts-copyModeControl-overwriteEnabled'));
+    fireEvent.click(screen.getByLabelText(/automatically overwrite conflicts/i));
     expect(updateSelection).toHaveBeenNthCalledWith(3, { createNewCopies, overwrite: true });
   });
 
   it('should enable the Overwrite switch when createNewCopies is disabled', async () => {
     renderWithIntl(<CopyModeControl {...props} />);
 
-    expect(screen.getByTestId('cts-copyModeControl-overwriteRadioGroup')).toHaveAttribute('aria-disabled', 'true');
-    fireEvent.click(screen.getByTestId('cts-copyModeControl-createNewCopiesDisabled'));
-    expect(screen.getByTestId('cts-copyModeControl-overwriteRadioGroup')).not.toHaveAttribute('aria-disabled', 'true');
+    expect(screen.getByLabelText(/automatically overwrite conflicts/i)).toBeDisabled();
+    fireEvent.click(screen.getByLabelText(/check for existing objects/i));
+    expect(screen.getByLabelText(/automatically overwrite conflicts/i)).not.toBeDisabled();
   });
 
   it('should allow the user to toggle createNewCopies', async () => {
@@ -55,10 +55,10 @@ describe('CopyModeControl', () => {
     expect(updateSelection).not.toHaveBeenCalled();
     const { overwrite } = initialValues;
 
-    fireEvent.click(screen.getByTestId('cts-copyModeControl-createNewCopiesDisabled'));
+    fireEvent.click(screen.getByLabelText(/check for existing objects/i));
     expect(updateSelection).toHaveBeenNthCalledWith(1, { createNewCopies: false, overwrite });
 
-    fireEvent.click(screen.getByTestId('cts-copyModeControl-createNewCopiesEnabled'));
+    fireEvent.click(screen.getByLabelText(/create new objects with random ids/i));
     expect(updateSelection).toHaveBeenNthCalledWith(2, { createNewCopies: true, overwrite });
   });
 });

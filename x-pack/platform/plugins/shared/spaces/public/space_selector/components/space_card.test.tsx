@@ -5,7 +5,7 @@
  * 2.0.
  */
 
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import React from 'react';
 
 import { SpaceCard } from './space_card';
@@ -30,9 +30,10 @@ test('links to the indicated space', () => {
     disabledFeatures: [],
   };
 
-  const { getByTestId } = render(<SpaceCard space={space} serverBasePath={'/server-base-path'} />);
-  const card = getByTestId('space-card-some-space');
-  expect(card).toHaveAttribute('href', '/server-base-path/s/some-space/spaces/enter');
+  render(<SpaceCard space={space} serverBasePath={'/server-base-path'} />);
+  const card = screen.getByTestId('space-card-some-space');
+  const link = within(card).getByRole('link');
+  expect(link).toHaveAttribute('href', '/server-base-path/s/some-space/spaces/enter');
   expect(card).toHaveTextContent('space name');
 });
 
@@ -44,8 +45,9 @@ test('links to the default space too', () => {
     disabledFeatures: [],
   };
 
-  const { getByTestId } = render(<SpaceCard space={space} serverBasePath={'/server-base-path'} />);
-  const card = getByTestId('space-card-default');
-  expect(card).toHaveAttribute('href', '/server-base-path/spaces/enter');
+  render(<SpaceCard space={space} serverBasePath={'/server-base-path'} />);
+  const card = screen.getByTestId('space-card-default');
+  const link = within(card).getByRole('link');
+  expect(link).toHaveAttribute('href', '/server-base-path/spaces/enter');
   expect(card).toHaveTextContent('default space');
 });
