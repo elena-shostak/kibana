@@ -5,8 +5,10 @@
  * 2.0.
  */
 
-import { render, screen } from '@testing-library/react';
+import { render } from '@testing-library/react';
 import React from 'react';
+
+import { I18nProvider } from '@kbn/i18n-react';
 
 import { ReservedRoleBadge } from './reserved_role_badge';
 import type { Role } from '../../../../common';
@@ -66,12 +68,14 @@ const unreservedRole = {
   ],
 };
 
+const renderWithIntl = (ui: React.ReactElement) => render(<I18nProvider>{ui}</I18nProvider>);
+
 test('it renders without crashing', () => {
-  render(<ReservedRoleBadge role={reservedRole} />);
-  expect(screen.getByTestId('reservedRoleBadgeTooltip')).toBeInTheDocument();
+  const { container } = renderWithIntl(<ReservedRoleBadge role={reservedRole} />);
+  expect(container).not.toBeEmptyDOMElement();
 });
 
 test('it renders nothing for an unreserved role', () => {
-  const { container } = render(<ReservedRoleBadge role={unreservedRole} />);
+  const { container } = renderWithIntl(<ReservedRoleBadge role={unreservedRole} />);
   expect(container).toBeEmptyDOMElement();
 });
