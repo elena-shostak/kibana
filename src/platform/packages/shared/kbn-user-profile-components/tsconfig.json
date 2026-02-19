@@ -6,6 +6,7 @@
       "jest",
       "node",
       "@emotion/react/types/css-prop",
+      "@testing-library/jest-dom",
     ]
   },
   "include": [
