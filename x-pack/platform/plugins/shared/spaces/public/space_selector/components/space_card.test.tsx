@@ -30,9 +30,10 @@ test('links to the indicated space', () => {
     disabledFeatures: [],
   };
 
-  render(<SpaceCard space={space} serverBasePath={'/server-base-path'} />);
-  const link = screen.getByTestId('space-card-some-space');
-  expect(link).toHaveAttribute('href', '/server-base-path/s/some-space/spaces/enter');
+  const { getByTestId } = render(<SpaceCard space={space} serverBasePath={'/server-base-path'} />);
+  const card = getByTestId('space-card-some-space');
+  expect(card).toHaveAttribute('href', '/server-base-path/s/some-space/spaces/enter');
+  expect(card).toHaveTextContent('space name');
 });
 
 test('links to the default space too', () => {
@@ -43,7 +44,8 @@ test('links to the default space too', () => {
     disabledFeatures: [],
   };
 
-  render(<SpaceCard space={space} serverBasePath={'/server-base-path'} />);
-  const link = screen.getByTestId('space-card-default');
-  expect(link).toHaveAttribute('href', '/server-base-path/spaces/enter');
+  const { getByTestId } = render(<SpaceCard space={space} serverBasePath={'/server-base-path'} />);
+  const card = getByTestId('space-card-default');
+  expect(card).toHaveAttribute('href', '/server-base-path/spaces/enter');
+  expect(card).toHaveTextContent('default space');
 });
