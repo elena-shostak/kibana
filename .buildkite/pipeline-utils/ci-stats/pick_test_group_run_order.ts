@@ -11,7 +11,7 @@ import * as Fs from 'fs';
 import os from 'os';
 
 import * as globby from 'globby';
-import minimatch from 'minimatch';
+import { minimatch } from 'minimatch';
 
 import { load as loadYaml } from 'js-yaml';
 

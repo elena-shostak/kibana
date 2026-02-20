@@ -8,7 +8,7 @@
  */
 import Path from 'path';
 import execa from 'execa';
-import minimatch from 'minimatch';
+import { minimatch } from 'minimatch';
 
 export async function collectConfigPaths({
   patterns,

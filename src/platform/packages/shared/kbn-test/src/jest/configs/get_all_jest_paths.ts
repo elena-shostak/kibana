@@ -9,7 +9,7 @@
 
 import Path from 'path';
 
-import minimatch from 'minimatch';
+import { minimatch } from 'minimatch';
 import { getRepoFiles } from '@kbn/get-repo-files';
 
 import { testMatch } from '../../../jest-preset';
