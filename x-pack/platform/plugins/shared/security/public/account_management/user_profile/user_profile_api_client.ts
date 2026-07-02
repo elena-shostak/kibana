@@ -159,7 +159,7 @@ export class UserProfileAPIClient implements UserProfileAPIClientType {
    * @param data Application data to be written (merged with existing data).
    */
   public partialUpdate<D extends Partial<UserProfileData>>(data: D) {
-    const updated = merge(this._userProfile$.getValue(), data);
+    const updated = merge({}, this._userProfile$.getValue(), data);
     return this.update(updated);
   }
 }
